@@ -7,6 +7,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
 import { collections } from './collections'
+import { endpoints } from './endpoints'
 import { globals } from './globals'
 
 const filename = fileURLToPath(import.meta.url)
@@ -29,6 +30,7 @@ export default buildConfig({
   },
   collections,
   globals,
+  endpoints,
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || 'dev-secret-change-me',
   typescript: {
