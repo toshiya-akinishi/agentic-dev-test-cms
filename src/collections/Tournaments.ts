@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, editorOnly } from '../access'
+import { tournamentsAdvanceLiveEndpoint } from '../endpoints/tournamentsAdvanceLive'
 
 /**
  * 大会（要求 1-3, 1-4, 1-8, 1-13, 1-26）
@@ -20,6 +21,9 @@ export const Tournaments: CollectionConfig = {
     update: editorOnly,
     delete: editorOnly,
   },
+  // T-10-11: コレクション自身の endpoints に相対パスで登録する（cutProbability.ts / rankings.ts
+  // と同じ理由。ルート登録だと `/api/tournaments/:id` に奪われる。ADR-020）
+  endpoints: [tournamentsAdvanceLiveEndpoint],
   fields: [
     { name: 'name', type: 'text', label: '大会名', required: true },
     {

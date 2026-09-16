@@ -162,6 +162,7 @@ pnpm seed:reset   # jtour.db と media/ の中身を削除してから実行（�
 | POST | `/api/notifications/run-checks` | 通知発火ジョブのオンデマンド実行（cron の代替。全量再評価し未生成の通知のみ作成） |
 | GET | `/api/notifications/me` | ログインユーザー/ゲスト向けの通知一覧（既読/未読、未読件数） |
 | POST | `/api/notifications/mark-read` | 通知の既読化 |
+| POST | `/api/tournaments/advance-live` | ライブ進行シミュレーションジョブ（T-10-11）。`?tournamentId=` の開催中大会・進行中ラウンドで、未了選手を1ホール進める（cron 代替の on-demand ジョブ。operator 以上） |
 
 ---
 
@@ -169,5 +170,5 @@ pnpm seed:reset   # jtour.db と media/ の中身を削除してから実行（�
 
 詳細な設計判断は hub リポジトリの ADR（[09-decisions.md](https://github.com/toshiya-akinishi/agentic-dev-test-hub/blob/feature/test1/docs/09-decisions.md)）、データモデルは [02-data-model.md](https://github.com/toshiya-akinishi/agentic-dev-test-hub/blob/feature/test1/docs/02-data-model.md)、API 全体仕様は [03-api-spec.md](https://github.com/toshiya-akinishi/agentic-dev-test-hub/blob/feature/test1/docs/03-api-spec.md) を参照。特に新規参入者が引っかかりやすい点として:
 
-- **エンドポイントのルーティング衝突（ADR-020）**: Payload はパスの先頭セグメントを最初にコレクション/global の slug として解決する。そのため `/api/rankings/latest` のような「先頭セグメントが既存コレクションの slug と一致するパス」を `src/endpoints/index.ts`（ルートレベルの `config.endpoints`）に登録すると、`rankings` コレクション標準の `GET /:id`（`id="latest"` 扱い）にルーティングを奪われてしまい 500 になる。この形のエンドポイント（`rankings/latest`, `players/cut-probability`, `playlists/auto`, `analytics-events/batch`, `users/me/delete`, `notifications/*`）は必ず**該当コレクション自身の `endpoints` 配列に相対パスで登録する**（例: `Rankings.ts` の `endpoints: [rankingsLatestEndpoint]` に `path: '/latest'`）。逆に `ads`, `guest`, `reports`, `auth` のように衝突しうる同名コレクションが存在しないものは `src/endpoints/index.ts` にルート登録してよい。実装中に複数回踏まれた既知の落とし穴なので、新規エンドポイント追加時は必ずこの規約に従うこと。
+- **エンドポイントのルーティング衝突（ADR-020）**: Payload はパスの先頭セグメントを最初にコレクション/global の slug として解決する。そのため `/api/rankings/latest` のような「先頭セグメントが既存コレクションの slug と一致するパス」を `src/endpoints/index.ts`（ルートレベルの `config.endpoints`）に登録すると、`rankings` コレクション標準の `GET /:id`（`id="latest"` 扱い）にルーティングを奪われてしまい 500 になる。この形のエンドポイント（`rankings/latest`, `players/cut-probability`, `playlists/auto`, `analytics-events/batch`, `users/me/delete`, `notifications/*`, `tournaments/advance-live`）は必ず**該当コレクション自身の `endpoints` 配列に相対パスで登録する**（例: `Rankings.ts` の `endpoints: [rankingsLatestEndpoint]` に `path: '/latest'`）。逆に `ads`, `guest`, `reports`, `auth` のように衝突しうる同名コレクションが存在しないものは `src/endpoints/index.ts` にルート登録してよい。実装中に複数回踏まれた既知の落とし穴なので、新規エンドポイント追加時は必ずこの規約に従うこと。
 - **seed の決定性**: `src/seed/*.ts` は `.env` の `SEED` 値からシード付き乱数を生成しており、同じ `SEED` なら常に同じデータ・同じ選手ID・同じ「開催中大会」のドラマチックなシナリオ（優勝争い/カットライン際どい選手/ホールインワン）が再現される。テストや自動チェック（`src/seed/checklist.ts`）はこの決定性に依存しているため、`SEED` を変えると `06-test-data.md` に記載の期待値と噛み合わなくなる点に注意。

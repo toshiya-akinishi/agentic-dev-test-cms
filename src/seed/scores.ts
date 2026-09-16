@@ -50,21 +50,29 @@ export type ScoreSeedResult = {
   liveScenario: LiveScenario
 }
 
-const resultOf = (delta: number): HoleResult =>
+export const resultOf = (delta: number): HoleResult =>
   delta <= -2 ? 'eagle' : delta === -1 ? 'birdie' : delta === 0 ? 'par' : delta === 1 ? 'bogey' : 'double_or_worse'
+
+/**
+ * 1 ホール分の対パー delta を、技量（skill。小さいほど強い）に偏らせた重み付けで 1 つ選ぶ。
+ * `buildDeltas`（ラウンド全体を目標スコアに帳尻合わせる版）の核となる分布そのもの。
+ * T-10-11（ライブ進行シミュレーションジョブ）が「選手の既存のスコア傾向と矛盾しない
+ * もっともらしい delta」を 1 ホールぶんだけ生成する目的でもそのまま再利用する。
+ */
+export const pickHoleDelta = (skill: number, rng: Rng): number => {
+  const entries: (readonly [number, number])[] = [
+    [-2, Math.max(0.4, 2.6 - skill * 3.2)],
+    [-1, Math.max(1, 20 - skill * 7)],
+    [0, 44],
+    [1, Math.max(1, 22 + skill * 7)],
+    [2, Math.max(0.4, 9 + skill * 5)],
+  ]
+  return rng.weighted(entries)
+}
 
 /** n ホール分の delta を、合計がちょうど target になるよう技量バイアス付きで生成する */
 const buildDeltas = (n: number, target: number, skill: number, rng: Rng): number[] => {
-  const pick = (): number => {
-    const entries: (readonly [number, number])[] = [
-      [-2, Math.max(0.4, 2.6 - skill * 3.2)],
-      [-1, Math.max(1, 20 - skill * 7)],
-      [0, 44],
-      [1, Math.max(1, 22 + skill * 7)],
-      [2, Math.max(0.4, 9 + skill * 5)],
-    ]
-    return rng.weighted(entries)
-  }
+  const pick = (): number => pickHoleDelta(skill, rng)
   const deltas = Array.from({ length: n }, pick)
   let sum = deltas.reduce((a, b) => a + b, 0)
   let guard = 0
