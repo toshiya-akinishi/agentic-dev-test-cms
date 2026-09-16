@@ -115,3 +115,16 @@ export const staffOrOwner: Access = (args) => {
 
 /** admin のみ編集可（ロール変更など） */
 export const adminFieldOnly: FieldAccess = ({ req }) => isAdmin(req.user as UserLike)
+
+/**
+ * ロール変更は admin のみ、かつ自分自身のロールは変更できない（補-8-9-3）。
+ * `id` は更新対象ドキュメントの ID（新規作成時は undefined）。
+ */
+export const adminFieldOnlyNotSelf: FieldAccess = ({ req, id }) => {
+  if (!isAdmin(req.user as UserLike)) return false
+  const userId = (req.user as UserLike)?.id
+  if (id !== undefined && userId !== undefined && String(id) === String(userId)) {
+    return false
+  }
+  return true
+}

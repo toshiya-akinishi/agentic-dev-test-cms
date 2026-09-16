@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, staffOnly } from '../access'
+import { anyone, operatorOnly } from '../access'
 import { locationField } from '../fields'
 
 /**
@@ -15,11 +15,12 @@ export const TransportInfos: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'tournament', 'type', 'occupancyStatus', 'capacity'],
   },
+  // docs/02-data-model.md ロール別アクセス制御: 交通情報は operator（admin/operator）の CRUD 対象（補-8-9-1）
   access: {
     read: anyone,
-    create: staffOnly,
-    update: staffOnly,
-    delete: staffOnly,
+    create: operatorOnly,
+    update: operatorOnly,
+    delete: operatorOnly,
   },
   fields: [
     {

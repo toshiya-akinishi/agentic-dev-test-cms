@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, staffOnly } from '../access'
+import { anyone, editorOnly } from '../access'
 
 /**
  * 選手ストーリー（要求 4-1）
@@ -16,11 +16,12 @@ export const PlayerStories: CollectionConfig = {
     defaultColumns: ['title', 'player', 'publishedAt', 'order'],
     description: '選手ストーリー記事（4-1 / 補-4-1-1）',
   },
+  // docs/02-data-model.md ロール別アクセス制御: 選手コンテンツは editor（admin/editor）の CRUD 対象（補-8-9-1）
   access: {
     read: anyone,
-    create: staffOnly,
-    update: staffOnly,
-    delete: staffOnly,
+    create: editorOnly,
+    update: editorOnly,
+    delete: editorOnly,
   },
   fields: [
     {

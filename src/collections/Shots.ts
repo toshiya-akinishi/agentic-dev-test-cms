@@ -1,6 +1,6 @@
 import type { CollectionBeforeChangeHook, CollectionConfig, SelectField } from 'payload'
 
-import { anyone, staffOnly } from '../access'
+import { anyone, operatorOnly } from '../access'
 import { locationField } from '../fields'
 
 /** 使用クラブ（3-3 速報でクラブ名を出すための選択肢） */
@@ -133,11 +133,12 @@ export const Shots: CollectionConfig = {
     defaultColumns: ['player', 'round', 'hole', 'shotNo', 'shotType', 'club', 'occurredAt'],
     description: '1 打ごとのショットデータ（3-3 Play-by-play / 1-42 ショットビュー）',
   },
+  // docs/02-data-model.md ロール別アクセス制御: ショットは operator（admin/operator）の CRUD 対象（補-8-9-1）
   access: {
     read: anyone,
-    create: staffOnly,
-    update: staffOnly,
-    delete: staffOnly,
+    create: operatorOnly,
+    update: operatorOnly,
+    delete: operatorOnly,
   },
   hooks: {
     beforeChange: [generateAiCommentary],

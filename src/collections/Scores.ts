@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, staffOnly } from '../access'
+import { anyone, operatorOnly } from '../access'
 
 /**
  * スコア（ラウンド単位） — 要求 3-1, 3-2, 3-6
@@ -16,11 +16,12 @@ export const Scores: CollectionConfig = {
     defaultColumns: ['player', 'round', 'position', 'toPar', 'today', 'thru', 'status'],
     description: 'ラウンド単位のスコア（3-1 リーダーボード / 3-2 Hole-by-Hole / 3-6 スタッツ）',
   },
+  // docs/02-data-model.md ロール別アクセス制御: スコアは operator（admin/operator）の CRUD 対象（補-8-9-1）
   access: {
     read: anyone,
-    create: staffOnly,
-    update: staffOnly,
-    delete: staffOnly,
+    create: operatorOnly,
+    update: operatorOnly,
+    delete: operatorOnly,
   },
   fields: [
     {

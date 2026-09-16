@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, staffOnly } from '../access'
+import { anyone, editorOnly } from '../access'
 
 /**
  * 大会（要求 1-3, 1-4, 1-8, 1-13, 1-26）
@@ -13,11 +13,12 @@ export const Tournaments: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'season', 'venue', 'startDate', 'endDate', 'status'],
   },
+  // docs/02-data-model.md ロール別アクセス制御: 大会は editor（admin/editor）の CRUD 対象（補-8-9-1）
   access: {
     read: anyone,
-    create: staffOnly,
-    update: staffOnly,
-    delete: staffOnly,
+    create: editorOnly,
+    update: editorOnly,
+    delete: editorOnly,
   },
   fields: [
     { name: 'name', type: 'text', label: '大会名', required: true },

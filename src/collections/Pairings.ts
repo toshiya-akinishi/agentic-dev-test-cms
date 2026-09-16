@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, staffOnly } from '../access'
+import { anyone, operatorOnly } from '../access'
 
 /**
  * 組み合わせ・スタート時刻（要求 1-8 / 補-1-8-2, 補-1-8-3）
@@ -14,11 +14,12 @@ export const Pairings: CollectionConfig = {
     useAsTitle: 'groupNo',
     defaultColumns: ['round', 'groupNo', 'startTime', 'startHole', 'players'],
   },
+  // docs/02-data-model.md ロール別アクセス制御: 組み合わせは operator（admin/operator）の CRUD 対象（補-8-9-1）
   access: {
     read: anyone,
-    create: staffOnly,
-    update: staffOnly,
-    delete: staffOnly,
+    create: operatorOnly,
+    update: operatorOnly,
+    delete: operatorOnly,
   },
   fields: [
     {

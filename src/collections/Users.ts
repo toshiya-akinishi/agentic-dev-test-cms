@@ -1,6 +1,13 @@
 import type { CollectionConfig } from 'payload'
 
-import { ROLE_OPTIONS, adminFieldOnly, adminOnly, adminPanelAccess, isAdmin } from '../access'
+import {
+  ROLE_OPTIONS,
+  adminFieldOnly,
+  adminFieldOnlyNotSelf,
+  adminOnly,
+  adminPanelAccess,
+  isAdmin,
+} from '../access'
 
 /**
  * ユーザー（要求 6-2〜6-8）
@@ -46,9 +53,13 @@ export const Users: CollectionConfig = {
       access: {
         // ロール変更は admin のみ（補-8-9-3）
         create: adminFieldOnly,
-        update: adminFieldOnly,
+        // 補-8-9-3: 自分自身のロールは変更できない
+        update: adminFieldOnlyNotSelf,
       },
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+        description: '補-8-9-3。ロール変更は admin のみ可能。自分自身のロールは変更できません',
+      },
     },
     {
       name: 'sponsor',
