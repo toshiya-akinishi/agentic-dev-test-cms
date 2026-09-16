@@ -296,6 +296,18 @@ export interface Sponsor {
    * 8-5。ロゴ・バナータップ時の遷移先（クリエイティブ側の linkUrl が優先）
    */
   landingUrl?: string | null;
+  /**
+   * 補-8-4-1。表示回数/クリック/CTR/視聴時間合計/平均視聴完了率を過去30日分で自動集計（保存されない）。sponsor ロールは自社分のみ表示（他社は非表示）。期間を指定したい場合は GET /api/reports/sponsor を使用
+   */
+  adReportSummary?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3146,6 +3158,7 @@ export interface SponsorsSelect<T extends boolean = true> {
   contractFrom?: T;
   contractTo?: T;
   landingUrl?: T;
+  adReportSummary?: T;
   updatedAt?: T;
   createdAt?: T;
 }
