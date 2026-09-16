@@ -1,5 +1,6 @@
 import type { Endpoint } from 'payload'
 
+import { adsServeEndpoint } from './ads'
 import { guestMergeEndpoint } from './guestMerge'
 import { socialAuthEndpoint } from './socialAuth'
 import { twoFactorEndpoints } from './twoFactor'
@@ -15,6 +16,7 @@ import { twoFactorEndpoints } from './twoFactor'
  * （例: `src/collections/Rankings.ts` の `rankingsLatestEndpoint`）。
  */
 export const endpoints: Endpoint[] = [
+  adsServeEndpoint,
   guestMergeEndpoint,
   socialAuthEndpoint,
   ...twoFactorEndpoints,
