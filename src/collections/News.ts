@@ -1,13 +1,22 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { Access, CollectionConfig, Where } from 'payload'
 
 import { editorOnly, isStaff } from '../access'
 
-/** 公開済みのみ read（補-8-8-3 / 補-1-12-1）。下書きは公開 API に出さない */
+/**
+ * 公開済み、かつ `publishedAt` が現在時刻以下のみ read（補-8-8-3 / 補-1-12-1）。
+ * 下書きは公開 API に出さない。`publishedAt` が未来日時（＝予約公開）のものも
+ * 一覧・詳細から除外する（補-1-12-1: 一覧 API が `publishedAt <= now` で絞る）。
+ * スタッフ（admin / editor / operator）は下書き・予約公開分も参照できる。
+ */
 const readPublished: Access = ({ req }) => {
   if (isStaff(req.user as never)) return true
-  return {
-    or: [{ _status: { equals: 'published' } }, { _status: { exists: false } }],
+  const where: Where = {
+    and: [
+      { or: [{ _status: { equals: 'published' } }, { _status: { exists: false } }] },
+      { publishedAt: { less_than_equal: new Date().toISOString() } },
+    ],
   }
+  return where
 }
 
 /**
