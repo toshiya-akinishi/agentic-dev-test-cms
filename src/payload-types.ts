@@ -599,9 +599,13 @@ export interface Player {
    */
   slug: string;
   /**
-   * 8-14 / 補-8-14-1: 正方形 1:1・最小 800×800 の高解像度画像。未登録時はアプリ側でイニシャル表示
+   * 8-14 / 補-8-14-1, 補-8-14-3: 推奨レギュレーション = 正方形（1:1）・800×800px 以上・背景統一・顔が中央 40% に収まるよう撮影。800px 未満または非正方形の場合は保存後に下の「写真レギュレーション警告」に表示されます（保存はブロックされません）。未登録時はアプリ側でイニシャル表示のプレースホルダを出します（写真なしの空欄を作らない）
    */
   photo?: (number | null) | Media;
+  /**
+   * 補-8-14-3。保存時に自動チェックされます（800px 未満 / 非正方形の場合に表示）。背景統一・顔の中央配置は自動判定できないため目視で確認してください
+   */
+  photoRegulationWarning?: string | null;
   /**
    * 補-4-7-2（年齢は生年月日から算出）
    */
@@ -691,7 +695,7 @@ export interface Video {
    */
   kind: 'shot' | 'highlight' | 'story_vertical' | 'player_story' | 'live_archive';
   /**
-   * ローカル再生用（MOCK）。HLS 配信時は hlsUrl を使用します
+   * 補-8-8-2: アップロード再生用（MOCK）。HLS 配信時は hlsUrl を使用します。公開（公開ステータス）にするには file / hlsUrl のいずれかが必須です
    */
   file?: (number | null) | Media;
   /**
@@ -922,6 +926,9 @@ export interface AnalyticsEvent {
  */
 export interface User {
   id: number;
+  /**
+   * 補-8-9-3。ロール変更は admin のみ可能。自分自身のロールは変更できません
+   */
   role: 'admin' | 'editor' | 'operator' | 'sponsor' | 'fan';
   /**
    * sponsor ロールの場合、このスポンサーのデータのみ閲覧できます（補-8-9-2）
@@ -2951,6 +2958,7 @@ export interface PlayersSelect<T extends boolean = true> {
   nameEn?: T;
   slug?: T;
   photo?: T;
+  photoRegulationWarning?: T;
   birthDate?: T;
   height?: T;
   weight?: T;

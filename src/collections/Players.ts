@@ -1,6 +1,63 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
-import { anyone, staffOnly } from '../access'
+import { anyone, editorOnly } from '../access'
+
+/** 推奨レギュレーションの最小辺（px）。補-8-14-3 */
+const MIN_PHOTO_PX = 800
+/** 正方形とみなす縦横比の許容誤差 */
+const SQUARE_TOLERANCE = 0.05
+
+/**
+ * 選手写真のレギュレーション（補-8-14-3: 1:1 / 800px 以上 / 背景統一 / 顔が中央 40%）を
+ * サーバ側でチェックし、`photoRegulationWarning` に警告文を記録する。
+ * 保存はブロックしない（「バリデーションで警告する」＝非ブロッキング）。
+ * 背景統一・顔の位置は自動判定できないため、フィールド説明文でのガイドラインに留める。
+ */
+const checkPhotoRegulation: CollectionBeforeChangeHook = async ({ data, req }) => {
+  const d = data as Record<string, unknown>
+  const photo = d.photo as string | number | { id?: string | number } | null | undefined
+
+  if (!photo) {
+    d.photoRegulationWarning = null
+    return d
+  }
+
+  const mediaId = typeof photo === 'object' ? photo?.id : photo
+  if (mediaId === undefined || mediaId === null) return d
+
+  try {
+    const media = await req.payload.findByID({
+      collection: 'media',
+      id: mediaId,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const width = typeof media?.width === 'number' ? media.width : undefined
+    const height = typeof media?.height === 'number' ? media.height : undefined
+
+    if (width === undefined || height === undefined) {
+      d.photoRegulationWarning = null
+      return d
+    }
+
+    const warnings: string[] = []
+    if (width < MIN_PHOTO_PX || height < MIN_PHOTO_PX) {
+      warnings.push(
+        `推奨サイズ ${MIN_PHOTO_PX}×${MIN_PHOTO_PX}px 以上を下回っています（実際: ${width}×${height}px）`,
+      )
+    }
+    const ratioDiff = Math.abs(width - height) / Math.max(width, height)
+    if (ratioDiff > SQUARE_TOLERANCE) {
+      warnings.push(`正方形（1:1）ではありません（実際: ${width}×${height}px）`)
+    }
+
+    d.photoRegulationWarning = warnings.length > 0 ? `補-8-14-3: ${warnings.join(' / ')}` : null
+  } catch {
+    // メディア参照エラーで保存自体をブロックしない
+  }
+
+  return d
+}
 
 /**
  * 選手（要求 4-1, 4-6, 4-7, 8-14）
@@ -15,11 +72,15 @@ export const Players: CollectionConfig = {
     defaultColumns: ['name', 'nameEn', 'turnedProYear', 'isActive', 'updatedAt'],
     description: '選手マスタ（4-1 / 4-6 / 4-7 / 8-14）',
   },
+  // docs/02-data-model.md ロール別アクセス制御: 選手は editor（admin/editor）の CRUD 対象（補-8-9-1）
   access: {
     read: anyone,
-    create: staffOnly,
-    update: staffOnly,
-    delete: staffOnly,
+    create: editorOnly,
+    update: editorOnly,
+    delete: editorOnly,
+  },
+  hooks: {
+    beforeChange: [checkPhotoRegulation],
   },
   fields: [
     {
@@ -52,7 +113,23 @@ export const Players: CollectionConfig = {
       label: '顔写真',
       admin: {
         description:
-          '8-14 / 補-8-14-1: 正方形 1:1・最小 800×800 の高解像度画像。未登録時はアプリ側でイニシャル表示',
+          '8-14 / 補-8-14-1, 補-8-14-3: 推奨レギュレーション = 正方形（1:1）・800×800px 以上・' +
+          '背景統一・顔が中央 40% に収まるよう撮影。800px 未満または非正方形の場合は保存後に' +
+          '下の「写真レギュレーション警告」に表示されます（保存はブロックされません）。' +
+          '未登録時はアプリ側でイニシャル表示のプレースホルダを出します（写真なしの空欄を作らない）',
+      },
+    },
+    {
+      name: 'photoRegulationWarning',
+      type: 'text',
+      label: '写真レギュレーション警告',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description:
+          '補-8-14-3。保存時に自動チェックされます（800px 未満 / 非正方形の場合に表示）。' +
+          '背景統一・顔の中央配置は自動判定できないため目視で確認してください',
+        condition: (data) => Boolean(data?.photoRegulationWarning),
       },
     },
     {
