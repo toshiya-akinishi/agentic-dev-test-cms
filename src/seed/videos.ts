@@ -89,6 +89,10 @@ export const seedVideos = async (ctx: SeedCtx, shotResult: ShotSeedResult): Prom
         title: `${player.name} ${s.hole}番ホール ${tags.includes('hole_in_one') ? 'ホールインワン！' : 'ショット'}`,
         slug,
         kind: 'shot',
+        // 補-8-8-3: 公開 API（readPublished）から見えるよう明示的に公開ステータスで作成する。
+        // versions.drafts 有効コレクションは _status 未指定だと 'draft' がデフォルトになるため注意
+        // （T-12-8 / T-12-11 の検証で判明。node_modules/payload/dist/versions/baseFields.js 参照）
+        _status: 'published',
         hlsUrl: `https://mock.jtour.example/videos/${slug}.m3u8`,
         thumbnail: thumb,
         durationSec: rng.int(5, 12),
@@ -139,6 +143,7 @@ export const seedVideos = async (ctx: SeedCtx, shotResult: ShotSeedResult): Prom
         title: `${t.name} ダイジェスト ${i + 1}`,
         slug,
         kind: 'highlight',
+        _status: 'published', // 補-8-8-3: 公開 API から見えるよう明示（詳細は上の shot 動画のコメント参照）
         hlsUrl: `https://mock.jtour.example/videos/${slug}.m3u8`,
         thumbnail: thumb,
         durationSec: rng.int(45, 120),
@@ -178,6 +183,7 @@ export const seedVideos = async (ctx: SeedCtx, shotResult: ShotSeedResult): Prom
         title: `${player.name} の見どころショート`,
         slug,
         kind: 'story_vertical',
+        _status: 'published', // 補-8-8-3: 公開 API から見えるよう明示（詳細は上の shot 動画のコメント参照）
         hlsUrl: `https://mock.jtour.example/videos/${slug}.m3u8`,
         thumbnail: thumb,
         durationSec: rng.int(15, 60),
@@ -217,6 +223,7 @@ export const seedVideos = async (ctx: SeedCtx, shotResult: ShotSeedResult): Prom
         title: `${player.name} インタビュー`,
         slug,
         kind: 'player_story',
+        _status: 'published', // 補-8-8-3: 公開 API から見えるよう明示(詳細は上の shot 動画のコメント参照)
         hlsUrl: `https://mock.jtour.example/videos/${slug}.m3u8`,
         thumbnail: thumb,
         durationSec: rng.int(60, 180),
