@@ -4,7 +4,11 @@ import { anyone, staffOnly } from '../access'
 export const Media: CollectionConfig = {
   slug: 'media',
   labels: { singular: 'メディア', plural: 'メディア' },
-  admin: { group: '共通', useAsTitle: 'alt' },
+  admin: {
+    group: '共通',
+    useAsTitle: 'alt',
+    defaultColumns: ['filename', 'alt', 'caption', 'credit', 'filesize'],
+  },
   access: {
     read: anyone,
     create: staffOnly,
