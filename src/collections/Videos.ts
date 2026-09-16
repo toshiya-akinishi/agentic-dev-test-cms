@@ -1,4 +1,6 @@
-import type { Access, CollectionConfig } from 'payload'
+import type { Access, CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+
+import { ValidationError } from 'payload'
 
 import { editorOnly, isStaff } from '../access'
 import { locationField } from '../fields/location'
@@ -13,6 +15,38 @@ const readPublished: Access = ({ req }) => {
   return {
     or: [{ _status: { equals: 'published' } }, { _status: { exists: false } }],
   }
+}
+
+/**
+ * 補-8-8-2: アップロード（`file`）と外部 URL 指定（`hlsUrl`）を併用可能とするが、
+ * 公開時にはどちらか一方が必須（再生ソースが無い公開動画を防ぐ）。
+ * 下書き保存中は未入力を許容する（Payload の drafts の必須項目免除に合わせる）。
+ */
+const requirePlaybackSource: CollectionBeforeValidateHook = ({ data, originalDoc, req }) => {
+  const d = (data ?? {}) as Record<string, unknown>
+  const original = (originalDoc ?? {}) as Record<string, unknown>
+  const status = (d._status as string | undefined) ?? (original._status as string | undefined)
+
+  if (status !== 'published') return data
+
+  const file = d.file !== undefined ? d.file : original.file
+  const hlsUrl = d.hlsUrl !== undefined ? d.hlsUrl : original.hlsUrl
+
+  if (!file && !hlsUrl) {
+    throw new ValidationError({
+      collection: 'videos',
+      errors: [
+        {
+          path: 'hlsUrl',
+          message:
+            '補-8-8-2: 公開するには「動画ファイル」または「HLS URL」のいずれかを設定してください',
+        },
+      ],
+      req,
+    })
+  }
+
+  return data
 }
 
 /** 動画タグ（補-2-10-1 の 8 種） */
@@ -50,6 +84,9 @@ export const Videos: CollectionConfig = {
     create: editorOnly,
     update: editorOnly,
     delete: editorOnly,
+  },
+  hooks: {
+    beforeValidate: [requirePlaybackSource],
   },
   fields: [
     { name: 'title', type: 'text', label: 'タイトル', required: true },
@@ -92,7 +129,11 @@ export const Videos: CollectionConfig = {
           type: 'upload',
           relationTo: 'media',
           label: '動画ファイル',
-          admin: { description: 'ローカル再生用（MOCK）。HLS 配信時は hlsUrl を使用します' },
+          admin: {
+            description:
+              '補-8-8-2: アップロード再生用（MOCK）。HLS 配信時は hlsUrl を使用します。' +
+              '公開（公開ステータス）にするには file / hlsUrl のいずれかが必須です',
+          },
         },
         {
           name: 'hlsUrl',
