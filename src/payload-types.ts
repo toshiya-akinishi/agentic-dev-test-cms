@@ -1089,7 +1089,7 @@ export interface Faq {
   createdAt: string;
 }
 /**
- * 4-12 / 4-13。1 ユーザー（または 1 端末）あたりの上限は 10 名（ADR-006 / 補-4-12-1）。上限のチェックはアプリ／エンドポイント側で行う
+ * 4-12 / 4-13。1 ユーザー（または 1 端末）あたりの上限は 10 名（ADR-006 / 補-4-12-1）。アプリ側に加え、beforeChange フックでサーバー側でも作成時に強制する
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "favorites".
