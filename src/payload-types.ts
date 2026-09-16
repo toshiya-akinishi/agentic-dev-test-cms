@@ -168,10 +168,12 @@ export interface Config {
   globals: {
     'legal-documents': LegalDocument;
     'app-settings': AppSetting;
+    'emergency-broadcast': EmergencyBroadcast;
   };
   globalsSelect: {
     'legal-documents': LegalDocumentsSelect<false> | LegalDocumentsSelect<true>;
     'app-settings': AppSettingsSelect<false> | AppSettingsSelect<true>;
+    'emergency-broadcast': EmergencyBroadcastSelect<false> | EmergencyBroadcastSelect<true>;
   };
   locale: null;
   widgets: {
@@ -3564,6 +3566,17 @@ export interface AppSetting {
   createdAt?: string | null;
 }
 /**
+ * 1-23 / T-14-3。運営（operator）以上が中止・順延・中断・再開・雷警報・避難指示を全ユーザーへ即時配信します（マスタースイッチ無視・ADR-015）
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "emergency-broadcast".
+ */
+export interface EmergencyBroadcast {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "legal-documents_select".
  */
@@ -3588,6 +3601,15 @@ export interface AppSettingsSelect<T extends boolean = true> {
   goodScoreToPar?: T;
   maintenanceMode?: T;
   minimumAppVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "emergency-broadcast_select".
+ */
+export interface EmergencyBroadcastSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
