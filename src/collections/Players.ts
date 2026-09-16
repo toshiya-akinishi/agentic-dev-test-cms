@@ -1,6 +1,7 @@
 import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
 import { anyone, editorOnly } from '../access'
+import { cutProbabilityEndpoint } from '../endpoints/cutProbability'
 
 /** 推奨レギュレーションの最小辺（px）。補-8-14-3 */
 const MIN_PHOTO_PX = 800
@@ -72,6 +73,10 @@ export const Players: CollectionConfig = {
     defaultColumns: ['name', 'nameEn', 'turnedProYear', 'isActive', 'updatedAt'],
     description: '選手マスタ（4-1 / 4-6 / 4-7 / 8-14）',
   },
+  // GET /api/players/cut-probability（4-14 / 補-4-14-1, 補-4-14-2 / T-13-7）。
+  // ルート登録だと先頭セグメント `players` が players コレクションの `/:id` に奪われるため、
+  // rankings.ts と同様にコレクション自身の endpoints に相対パスで登録する
+  endpoints: [cutProbabilityEndpoint],
   // docs/02-data-model.md ロール別アクセス制御: 選手は editor（admin/editor）の CRUD 対象（補-8-9-1）
   access: {
     read: anyone,
