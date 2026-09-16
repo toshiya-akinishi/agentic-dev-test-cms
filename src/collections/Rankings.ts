@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, staffOnly } from '../access'
+import { rankingsLatestEndpoint } from '../endpoints/rankings'
 
 /**
  * ランキング（要求 1-5, 1-6, 1-7）
@@ -16,6 +17,9 @@ export const Rankings: CollectionConfig = {
     defaultColumns: ['type', 'season', 'asOf', 'updatedAt'],
     description: '賞金・ポイント・各種スタッツランキング（1-5 / 1-6 / 1-7）',
   },
+  // GET /api/rankings/latest（T-05-4）。コレクション独自の endpoints に登録する理由は
+  // src/endpoints/rankings.ts のコメントを参照（ルート登録だと /:id に奪われる）
+  endpoints: [rankingsLatestEndpoint],
   access: {
     read: anyone,
     create: staffOnly,
