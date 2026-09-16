@@ -1,6 +1,8 @@
 import type { Endpoint } from 'payload'
 
 import { guestMergeEndpoint } from './guestMerge'
+import { socialAuthEndpoint } from './socialAuth'
+import { twoFactorEndpoints } from './twoFactor'
 
 /**
  * カスタムエンドポイント（docs/03-api-spec.md 3章）。
@@ -12,4 +14,8 @@ import { guestMergeEndpoint } from './guestMerge'
  * 奪われる。その場合は該当コレクションの `endpoints` に相対パスで登録する
  * （例: `src/collections/Rankings.ts` の `rankingsLatestEndpoint`）。
  */
-export const endpoints: Endpoint[] = [guestMergeEndpoint]
+export const endpoints: Endpoint[] = [
+  guestMergeEndpoint,
+  socialAuthEndpoint,
+  ...twoFactorEndpoints,
+]

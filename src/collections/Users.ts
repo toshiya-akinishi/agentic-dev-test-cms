@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { AuthenticationError } from 'payload'
 
 import {
   ROLE_OPTIONS,
@@ -8,6 +9,7 @@ import {
   adminPanelAccess,
   isAdmin,
 } from '../access'
+import { accountDeletionEndpoint } from '../endpoints/accountDeletion'
 
 /**
  * ユーザー（要求 6-2〜6-8）
@@ -26,6 +28,19 @@ export const Users: CollectionConfig = {
     maxLoginAttempts: 5, // 補-6-2-3
     lockTime: 15 * 60 * 1000, // 15分
   },
+  hooks: {
+    // 6-7 / 補-6-7-1: 論理削除済み（退会済み）アカウントはログイン不可にする
+    beforeLogin: [
+      ({ req, user }) => {
+        if ((user as { deletedAt?: string | null } | null)?.deletedAt) {
+          throw new AuthenticationError(req.t)
+        }
+      },
+    ],
+  },
+  // POST /api/users/me/delete（6-7 / T-05-9）。相対パス /me/delete で登録する理由は
+  // src/endpoints/accountDeletion.ts のコメントを参照
+  endpoints: [accountDeletionEndpoint],
   access: {
     // 自分自身、または admin のみ参照可
     read: ({ req }) => {
@@ -116,7 +131,13 @@ export const Users: CollectionConfig = {
                 { label: 'Instagram', value: 'instagram' },
               ],
             },
-            { name: 'accountId', type: 'text', required: true },
+            { name: 'accountId', type: 'text', required: true, label: 'メール/外部ID' },
+            {
+              name: 'linkedAt',
+              type: 'date',
+              label: '連携日時',
+              admin: { description: '補-6-4-1。/api/auth/social/:provider (mode=link) で設定' },
+            },
           ],
         },
         {
@@ -156,13 +177,17 @@ export const Users: CollectionConfig = {
           name: 'twoFactorSecret',
           type: 'text',
           label: 'TOTP シークレット',
+          // API レスポンスにも一切出さない（enroll/verify/login-verify エンドポイントは
+          // overrideAccess: true でのみ読み書きする）
+          access: { read: () => false },
           admin: { hidden: true },
         },
         {
           name: 'twoFactorRecoveryCodes',
           type: 'json',
-          label: 'リカバリコード',
-          admin: { hidden: true },
+          label: 'リカバリコード（ハッシュ化済み）',
+          access: { read: () => false },
+          admin: { hidden: true, description: '発行時に平文で 1 回だけ表示し、保存時は SHA-256 ハッシュのみを保持する' },
         },
       ],
     },

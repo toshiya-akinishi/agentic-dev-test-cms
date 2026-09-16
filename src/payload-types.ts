@@ -949,6 +949,10 @@ export interface User {
     | {
         provider: 'google' | 'apple' | 'line' | 'x' | 'instagram';
         accountId: string;
+        /**
+         * 補-6-4-1。/api/auth/social/:provider (mode=link) で設定
+         */
+        linkedAt?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -962,6 +966,9 @@ export interface User {
     | null;
   twoFactorEnabled?: boolean | null;
   twoFactorSecret?: string | null;
+  /**
+   * 発行時に平文で 1 回だけ表示し、保存時は SHA-256 ハッシュのみを保持する
+   */
   twoFactorRecoveryCodes?:
     | {
         [k: string]: unknown;
@@ -3250,6 +3257,7 @@ export interface UsersSelect<T extends boolean = true> {
     | {
         provider?: T;
         accountId?: T;
+        linkedAt?: T;
         id?: T;
       };
   golfClubSetting?:
