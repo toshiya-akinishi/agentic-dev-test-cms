@@ -185,6 +185,9 @@ export const seedAds = async (ctx: SeedCtx): Promise<void> => {
             alt: `${sponsor.name} 広告`,
           })
         : undefined
+    // 補-8-3-3: format=video のクリエイティブは実在の動画を紐付ける（video_pre 枠で /api/ads/serve が
+    // 再生可能な video を返せるようにする）。ctx.videoIds は run.ts で seedVideos 実行後にセットされる
+    const video = slot.format === 'video' && ctx.videoIds.length ? rng.pick(ctx.videoIds) : undefined
     const tournamentTarget = i % 4 === 0 ? rng.pick(ctx.tournaments).id : undefined
     const playerTarget = i % 5 === 0 ? rng.pick(ctx.players).id : undefined
     await ctx.payload.create({
@@ -196,6 +199,7 @@ export const seedAds = async (ctx: SeedCtx): Promise<void> => {
         tournament: tournamentTarget,
         player: playerTarget,
         image,
+        video,
         article: slot.format === 'tieup_article' ? newsForTieup.docs[i % newsForTieup.docs.length]?.id : undefined,
         linkUrl: `https://example.com/sponsors/${sponsor.id}`,
         weight: rng.int(1, 5),
