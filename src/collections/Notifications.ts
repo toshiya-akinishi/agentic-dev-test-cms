@@ -1,6 +1,9 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, operatorOnly } from '../access'
+import { notificationsEmergencyEndpoint } from '../endpoints/notificationsEmergency'
+import { notificationsMarkReadEndpoint, notificationsMeEndpoint } from '../endpoints/notificationsCenter'
+import { notificationsRunChecksEndpoint } from '../endpoints/notificationsRunChecks'
 
 /**
  * 通知（配信履歴＝通知センター）（要求 6-17 / 02-data-model.md E章）
@@ -28,6 +31,15 @@ export const Notifications: CollectionConfig = {
     delete: operatorOnly,
   },
   defaultSort: '-sentAt',
+  // T-14-1/2/3/6/7/8/9/11: 相対パスで登録する。ルート（src/endpoints/index.ts）に置くと
+  // 先頭セグメント `notifications` が先にコレクションスラッグとして解決され、
+  // コレクション標準の `/:id` 等に奪われるため（cutProbability.ts / rankings.ts と同じ理由）。
+  endpoints: [
+    notificationsEmergencyEndpoint, // POST /api/notifications/emergency (T-14-3)
+    notificationsRunChecksEndpoint, // POST /api/notifications/run-checks (T-14-2/6/7/8/9)
+    notificationsMeEndpoint, // GET  /api/notifications/me (T-14-11)
+    notificationsMarkReadEndpoint, // POST /api/notifications/mark-read (T-14-11)
+  ],
   fields: [
     {
       name: 'type',
@@ -135,6 +147,20 @@ export const Notifications: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: '補-6-17-3。緊急通知は high とし、未読の間は一覧最上位にピン留めする',
+      },
+    },
+    {
+      name: 'dedupeKey',
+      type: 'text',
+      label: '重複排除キー（内部用）',
+      unique: true,
+      index: true,
+      admin: {
+        position: 'sidebar',
+        hidden: true,
+        description:
+          'T-14-2。run-checks（判定ジョブ）が同一イベント×宛先の重複生成を防ぐための内部キー。' +
+          '手動発行（緊急通知等）では未設定のままでよい',
       },
     },
   ],

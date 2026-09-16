@@ -1749,6 +1749,10 @@ export interface Notification {
    * 補-6-17-3。緊急通知は high とし、未読の間は一覧最上位にピン留めする
    */
   priority?: ('high' | 'normal' | 'low') | null;
+  /**
+   * T-14-2。run-checks（判定ジョブ）が同一イベント×宛先の重複生成を防ぐための内部キー。手動発行（緊急通知等）では未設定のままでよい
+   */
+  dedupeKey?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2908,6 +2912,7 @@ export interface NotificationsSelect<T extends boolean = true> {
   sentAt?: T;
   readBy?: T;
   priority?: T;
+  dedupeKey?: T;
   updatedAt?: T;
   createdAt?: T;
 }
