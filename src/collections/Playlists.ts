@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { createOwnOrDevice, ownerOrDevice } from '../access'
+import { playlistsAutoEndpoint } from '../endpoints/playlists'
 import { ownerFields } from '../fields/location'
 
 /**
@@ -17,6 +18,10 @@ export const Playlists: CollectionConfig = {
     defaultColumns: ['name', 'owner', 'deviceId', 'isPublic', 'createdAt'],
     description: '2-23。いいね動画から作成するユーザー個別の再生リスト',
   },
+  // GET /api/playlists/auto（要求 2-15 / 補-2-15-1 / T-12-8）。コレクション独自の
+  // endpoints に登録する理由は src/endpoints/playlists.ts のコメントを参照
+  // （ルート登録だと /:id に奪われる）
+  endpoints: [playlistsAutoEndpoint],
   access: {
     // 自分（owner）または自端末（deviceId）のレコードのみ。admin は全件
     read: ownerOrDevice,
