@@ -1,6 +1,7 @@
 import type { Access, CollectionConfig, Where } from 'payload'
 
 import { adminOnly, isStaff } from '../access'
+import { analyticsEventsBatchEndpoint } from '../endpoints/analyticsEvents'
 
 /**
  * 計測イベント（要求 8-4, 8-6, 8-7 / 補-8-6-1, 補-8-6-2, 補-8-7-1）
@@ -51,6 +52,10 @@ export const AnalyticsEvents: CollectionConfig = {
     update: adminOnly,
     delete: adminOnly,
   },
+  // POST /api/analytics-events/batch（T-15-4, T-15-5, T-15-6）。ルートレベル登録だと
+  // 先頭セグメント `analytics-events` が先にコレクションスラッグとして解決されてしまうため、
+  // rankings.ts と同じ理由でコレクション自身の endpoints に相対パスで登録する
+  endpoints: [analyticsEventsBatchEndpoint],
   fields: [
     {
       name: 'eventName',
