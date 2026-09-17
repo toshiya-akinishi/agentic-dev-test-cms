@@ -42,8 +42,14 @@ export default buildConfig({
     },
   }),
   sharp,
-  // Expo 開発サーバなどアプリ側オリジンからの利用を許可（T-01-5）
-  cors: corsOrigins.length ? corsOrigins : '*',
+  // Expo 開発サーバなどアプリ側オリジンからの利用を許可（T-01-5）。
+  // `headers` にアプリ側が全リクエストで送る独自ヘッダー（ゲスト識別用 X-Device-Id、
+  // 補-6-1-1）を追加しないと、ブラウザの CORS プリフライトが拒否されアプリから
+  // 到達できなくなる（curl 等プリフライトを経由しない検証では見えないため注意）。
+  cors: {
+    origins: corsOrigins.length ? corsOrigins : '*',
+    headers: ['X-Device-Id'],
+  },
   csrf: corsOrigins,
   upload: {
     limits: { fileSize: 50_000_000 },
